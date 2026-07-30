@@ -2,12 +2,12 @@
 import { readBlockConfig } from '../../scripts/aem.js';
 import { CS_FETCH_GRAPHQL, getProductLink } from '../../scripts/commerce.js';
 
-async function fetchCategoryProducts(urlPath, maxProducts) {
+async function fetchCategoryProducts (categoryId, maxProducts) {
   const query = `
-    query GetCategoryProducts($urlPath: String!, $pageSize: Int!) {
+    query GetCategoryProducts($categoryId: String!, $pageSize: Int!) {
       productSearch(
         phrase: ""
-        filter: [{ attribute: "urlPath", eq: $urlPath }]
+        filter: [{ attribute: "categoryIds", eq: $categoryId }]
         page_size: $pageSize
       ) {
         items {
@@ -19,10 +19,11 @@ async function fetchCategoryProducts(urlPath, maxProducts) {
               url
               label
             }
-            price {
-              final { amount { value currency } }
-              regular { amount { value currency } }
-            }
+            ... on SimpleProductView {
+              price { 
+                final { amount { value currency } }
+              }
+            } 
           }
         }
       }
@@ -30,15 +31,15 @@ async function fetchCategoryProducts(urlPath, maxProducts) {
   `;
 
   const { data } = await CS_FETCH_GRAPHQL.fetchGraphQl(query, {
-    variables: { urlPath, pageSize: maxProducts },
+    variables: { categoryId, pageSize: maxProducts },
   });
 
   return data?.productSearch?.items || [];
 }
 
-export default async function decorate(block) {
+export default async function decorate (block) {
   const {
-    'url-path': urlPath = '',
+    'category-id': categoryId = '',
     heading = 'Featured Products',
     'max-products': maxProductsStr = '4',
   } = readBlockConfig(block);
@@ -53,7 +54,7 @@ export default async function decorate(block) {
   const productsContainer = block.querySelector('.promo-banner__products');
 
   try {
-    const products = await fetchCategoryProducts(urlPath, maxProducts);
+    const products = await fetchCategoryProducts(categoryId, maxProducts);
 
     if (products.length === 0) {
       productsContainer.innerHTML = '<p>No products found.</p>';
@@ -65,7 +66,6 @@ export default async function decorate(block) {
       const image = product.images?.[0];
       const price = product.price?.final?.amount;
       const productUrl = getProductLink(product.urlKey, product.sku);
-
       return `
         <a class="promo-banner__product" href="${productUrl}">
           ${image ? `<img src="${image.url}" alt="${image.label || product.name}" loading="lazy" width="300" height="300" />` : ''}
