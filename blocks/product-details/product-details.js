@@ -109,6 +109,7 @@ export default async function decorate(block) {
         <div class="product-details__header"></div>
         <div class="product-details__tagline pdp-tagline" aria-label="Promotional offer"></div>
         <div class="product-details__stock" role="status" aria-live="polite"></div>
+        <div class="product-details__tagline_upsell" role="status" aria-live="polite"></div>
         <div class="product-details__price"></div>
         <div class="product-details__gallery"></div>
         <div class="product-details__short-description"></div>
@@ -143,6 +144,7 @@ export default async function decorate(block) {
   const $attributes = fragment.querySelector('.product-details__attributes');
   const $tagline = fragment.querySelector('.product-details__tagline');
   const $stock = fragment.querySelector('.product-details__stock');
+  const $tagline_below_100 = fragment.querySelector('.product-details__tagline_upsell');
   const $customAttribute = fragment.querySelector('.product-details__custom-attribute');
 
   block.replaceChildren(fragment);
@@ -160,6 +162,10 @@ export default async function decorate(block) {
       $stock.textContent = '● Out of Stock';
       $stock.className = 'product-details__stock stock-badge stock-badge--out-of-stock';
     }
+    if (product.prices.final.amount < 100) {
+      $tagline_below_100.textContent = 'Below $100!';
+      $tagline_below_100.className = '.product-details__tagline_upsell tagline_below_100';
+    } 
     const value = product.metaTitle;
     if (value) {
       $customAttribute.innerHTML = `

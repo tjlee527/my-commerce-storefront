@@ -90,6 +90,12 @@
   color: #cc0000;
 }
 
+.tagline_below_100 {
+  text-transform: uppercase;
+  font-weight: 700;
+  color: blue;
+}
+
 .custom-attribute dt {
   font-weight: 600;
   margin-top: 0.5rem;
